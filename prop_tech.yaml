@@ -1,0 +1,297 @@
+openapi: 3.0.0
+info:
+  title: Room Conditions API
+  version: v1.2.3
+  description: API for managing properties, rooms, and room conditions.
+servers:
+  - url: https://prop.tech/v1
+security:
+  - bearerAuth: []
+paths:
+  /properties:
+    get:
+      summary: Get all properties
+      responses:
+        '200':
+          description: A list of properties.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/PropertyWithRooms'
+
+    post:
+      summary: Create a new property
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PropertyWithRooms'
+      responses:
+        '201':
+          description: The created property.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PropertyWithRooms'
+
+  /properties/{propertyId}:
+    parameters:
+      - name: propertyId
+        in: path
+        required: true
+        description: ID of the property
+        schema:
+          type: string
+    get:
+      summary: Get a property by ID
+      responses:
+        '200':
+          description: The requested property.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PropertyWithRooms'
+
+    put:
+      summary: Update a property by ID
+      parameters:
+        - name: propertyId
+          in: path
+          required: true
+          description: ID of the property
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PropertyWithRooms' # Modified schema reference
+      responses:
+        '200':
+          description: The updated property.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PropertyWithRooms'
+
+    delete:
+      summary: Delete a property by ID
+      responses:
+        '204':
+          description: Property deleted successfully
+
+  /properties/{propertyId}/rooms:
+    parameters:
+      - name: propertyId
+        in: path
+        required: true
+        description: ID of the property
+        schema:
+          type: string
+    get:
+      summary: Get all rooms of a property
+      responses:
+        '200':
+          description: A list of rooms.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/RoomWithConditions'
+
+  /properties/{propertyId}/rooms/{roomId}:
+    parameters:
+      - name: propertyId
+        in: path
+        required: true
+        description: ID of the property
+        schema:
+          type: string
+      - name: roomId
+        in: path
+        required: true
+        description: ID of the room
+        schema:
+          type: string
+    get:
+      summary: Get a room by ID
+      responses:
+        '200':
+          description: The requested room.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RoomWithConditions'
+
+    put:
+      summary: Update a room by ID
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RoomWithConditions'
+      responses:
+        '200':
+          description: The updated room.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RoomWithConditions'
+
+    delete:
+      summary: Delete a room by ID
+      responses:
+        '204':
+          description: Room deleted successfully
+
+  /properties/{propertyId}/rooms/{roomId}/conditions:
+    parameters:
+      - name: propertyId
+        in: path
+        required: true
+        description: ID of the property
+        schema:
+          type: string
+      - name: roomId
+        in: path
+        required: true
+        description: ID of the room
+        schema:
+          type: string
+    get:
+      summary: Get all room conditions of a room
+      responses:
+        '200':
+          description: A list of room conditions.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/RoomWithConditions'
+
+  /properties/{propertyId}/rooms/{roomId}/conditions/{conditionId}:
+    parameters:
+      - name: propertyId
+        in: path
+        required: true
+        description: ID of the property
+        schema:
+          type: string
+      - name: roomId
+        in: path
+        required: true
+        description: ID of the room
+        schema:
+          type: string
+      - name: conditionId
+        in: path
+        required: true
+        description: ID of the room condition (temperature, humidity, lightLevel)
+        schema:
+          type: string
+    get:
+      summary: Get a room condition by ID
+      responses:
+        '200':
+          description: The requested room condition.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RoomCondition' # Updated schema reference to return a single room condition based on conditionId
+
+    put:
+      summary: Update a room condition by ID
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RoomCondition' # Updated schema reference to match the room condition structure
+      responses:
+        '200':
+          description: The updated room condition.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RoomCondition'
+
+    delete:
+      summary: Delete a room condition by ID
+      responses:
+        '204':
+          description: Room condition deleted successfully
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT 
+  schemas:
+    Property:
+      type: object
+      properties:
+        id:
+          type: string
+          description: Unique identifier for the property.
+        name:
+          type: string
+          description: Name of the property (e.g., building, flat, home).
+      required:
+        - name
+
+    PropertyWithRooms:
+      allOf:
+        - $ref: '#/components/schemas/Property'
+        - type: object
+          properties:
+            rooms:
+              type: array
+              items:
+                $ref: '#/components/schemas/RoomWithConditions' # Modified schema reference
+
+    Room:
+      type: object
+      properties:
+        id:
+          type: string
+          description: Unique identifier for the room.
+        name:
+          type: string
+          description: Name of the room.
+      required:
+        - name
+
+    RoomWithConditions:
+      allOf:
+        - $ref: '#/components/schemas/Room'
+        - type: object
+          properties:
+            conditions:
+              type: array
+              items:
+                $ref: '#/components/schemas/RoomCondition' # Added schema reference for room conditions
+
+    RoomCondition:
+      type: object
+      properties:
+        temperature:
+          type: number
+          description: Temperature in the room.
+        humidity:
+          type: number
+          description: Humidity in the room.
+        lightLevel:
+          type: number
+          description: Light level in the room.
+      required:
+        - temperature
+        - humidity
+        - lightLevel
